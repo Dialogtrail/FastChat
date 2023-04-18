@@ -198,6 +198,7 @@ def http_bot(state, model_selector, temperature, max_new_tokens, request: gr.Req
     if len(state.messages) == state.offset + 2:
         # First round of conversation
         new_state = get_default_conv_template(model_name).copy()
+        new_state.set_system(state.system)
         new_state.conv_id = uuid.uuid4().hex
         new_state.append_message(new_state.roles[0], state.messages[-2][1])
         new_state.append_message(new_state.roles[1], None)
