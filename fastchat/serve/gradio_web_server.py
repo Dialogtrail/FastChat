@@ -151,9 +151,10 @@ def clear_history(request: gr.Request):
 def add_text(state, text, system, request: gr.Request):
     logger.info(f"add_text. ip: {request.client.host}. len: {len(text)}")
 
-    # New state every time
-    state = get_default_conv_template("vicuna").copy()
-    state.system = system
+    if state == None:
+        state = get_default_conv_template("vicuna").copy()
+
+    state.set_system(system)
 
     if len(text) <= 0:
         state.skip_next = True

@@ -25,6 +25,9 @@ class Conversation:
     skip_next: bool = False
     conv_id: Any = None
 
+    def set_system(self, system):
+        self.system = system
+
     def get_prompt(self):
         if self.sep_style == SeparatorStyle.SINGLE:
             ret = self.system
