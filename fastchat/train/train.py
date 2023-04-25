@@ -78,24 +78,27 @@ def safe_save_model_for_hf_trainer(trainer: transformers.Trainer,
 
 def preprocess(
     sources,
-    tokenizer: transformers.PreTrainedTokenizer,
+    tokenizer: transformers.PreTrainedTokenizer
 ) -> Dict:
     conv = get_default_conv_template("vicuna").copy()
     roles = {"human": conv.roles[0], "gpt": conv.roles[1]}
 
     # Apply prompt templates
     conversations = []
-    for i, source in enumerate(sources):
+    for i, (source, pre_prompt) in enumerate(sources):
         if roles[source[0]["from"]] != conv.roles[0]:
             # Skip the first one if it is not from human
             source = source[1:]
 
+        conv.set_system(pre_prompt or conv.system)
         conv.messages = []
         for j, sentence in enumerate(source):
             role = roles[sentence["from"]]
             assert role == conv.roles[j % 2], f"{i}"
             conv.append_message(role, sentence["value"])
         conversations.append(conv.get_prompt())
+        print(conv.get_prompt())
+        print("-----")
 
     # Tokenize conversations
     input_ids = tokenizer(
@@ -154,7 +157,7 @@ class SupervisedDataset(Dataset):
         list_data_dict = json.load(open(data_path, "r"))
 
         rank0_print("Formatting inputs...")
-        sources = [example["conversations"] for example in list_data_dict]
+        sources = [(example["conversations"], example["system"]) for example in list_data_dict]
         data_dict = preprocess(sources, tokenizer)
 
         self.input_ids = data_dict["input_ids"]
